@@ -34,8 +34,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		summary, _ := cmd.Flags().GetString("summary")
+		description, _ := cmd.Flags().GetString("description")
+
 		fmt.Println("defect called")
-		oslc.Auth()
+		oslc.CreateDefect(summary, description)
 	},
 }
 
@@ -51,4 +55,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// defectCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	defectCmd.PersistentFlags().String("summary", "", "summary of the work item")
+	defectCmd.PersistentFlags().String("description", "", "description of the work item")
+
+	defectCmd.MarkPersistentFlagRequired("summary")
+	defectCmd.MarkPersistentFlagRequired("description")
 }

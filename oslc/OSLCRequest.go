@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Auth() {
+func Auth() []*http.Cookie {
 
 	url := "https://10.168.0.74/ccm/j_security_check"
 	method := "POST"
@@ -25,7 +25,6 @@ func Auth() {
 
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("User-Agent", "PostmanRuntime/7.28.4")
@@ -35,7 +34,6 @@ func Auth() {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 	defer res.Body.Close()
 
@@ -47,10 +45,14 @@ func Auth() {
 	// fmt.Println(string(body))
 	// fmt.Println(res.Cookies())
 	// fmt.Println(res.Header.Get("X-com-ibm-team-repository-web-auth-msg"))
-	test(res.Cookies())
+	// test(res.Cookies())
+	return res.Cookies()
 }
 
-func test(cookie []*http.Cookie) {
+func CreateDefect(summary string, description string) {
+
+	cookie := Auth()
+
 	url := "https://10.168.0.74/ccm/oslc/contexts/_clBjsSvsEeylht3RHbzFtg/workitems/defect"
 	method := "POST"
 
@@ -78,10 +80,10 @@ func test(cookie []*http.Cookie) {
 				<oslc_cmx:project rdf:resource="https://10.168.0.74/ccm/oslc/projectareas/_clBjsSvsEeylht3RHbzFtg"/>
 				<rtc_cm:filedAgainst rdf:resource="https://10.168.0.74/ccm/resource/itemOid/com.ibm.team.workitem.Category/_eV-j8CvsEeylht3RHbzFtg"/>
 				<rtc_cm:type rdf:resource="https://10.168.0.74/ccm/oslc/types/_clBjsSvsEeylht3RHbzFtg/defect"/>
-				<dcterms:description rdf:parseType="Literal"></dcterms:description>
+				<dcterms:description rdf:parseType="Literal">` + description + `</dcterms:description>
 				<rdf:type rdf:resource="http://open-services.net/ns/cm#ChangeRequest"/>
 				<dcterms:subject rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></dcterms:subject>
-				<dcterms:title rdf:parseType="Literal">Test Defect 3</dcterms:title>
+				<dcterms:title rdf:parseType="Literal">` + summary + `</dcterms:title>
 			</rdf:Description>
 		</rdf:RDF>
 	`
