@@ -6,14 +6,24 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 func Auth() []*http.Cookie {
 
-	url := "https://10.168.0.74/ccm/j_security_check"
+	base_url := viper.Get("base_url").(string)
+	username := viper.Get("ewm_username").(string)
+	password := viper.Get("ewm_password").(string)
+
+	fmt.Println(base_url)
+	fmt.Println(username)
+	fmt.Println(password)
+
+	url := base_url + "/ccm/j_security_check"
 	method := "POST"
 
-	payload := strings.NewReader("j_username=Administrator&j_password=P@ssw0rd")
+	payload := strings.NewReader("j_username=" + username + "&j_password=" + password)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -53,7 +63,10 @@ func CreateDefect(summary string, description string) {
 
 	cookie := Auth()
 
-	url := "https://10.168.0.74/ccm/oslc/contexts/_clBjsSvsEeylht3RHbzFtg/workitems/defect"
+	base_url := viper.Get("base_url").(string)
+	oslc_context := viper.Get("oslc_context").(string)
+
+	url := base_url + "/ccm/oslc/contexts/" + oslc_context + "/workitems/defect"
 	method := "POST"
 
 	payload := `
@@ -71,15 +84,15 @@ func CreateDefect(summary string, description string) {
 			xmlns:process="http://jazz.net/ns/process#" >
 			<rdf:Description rdf:nodeID="A0">
 				<rdf:predicate rdf:resource="http://jazz.net/xmlns/prod/jazz/rtc/cm/1.0/com.ibm.team.workitem.linktype.textualReference.textuallyReferenced"/>
-				<rdf:object rdf:resource="https://10.168.0.74/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/1"/>
+				<rdf:object rdf:resource="` + base_url + `/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/1"/>
 				<rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"/>
 			</rdf:Description>
 			<rdf:Description>
 				<dcterms:type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defect</dcterms:type>
-				<acc:accessContext rdf:resource="https://10.168.0.74/ccm/acclist#_clBjsSvsEeylht3RHbzFtg"/>
-				<oslc_cmx:project rdf:resource="https://10.168.0.74/ccm/oslc/projectareas/_clBjsSvsEeylht3RHbzFtg"/>
-				<rtc_cm:filedAgainst rdf:resource="https://10.168.0.74/ccm/resource/itemOid/com.ibm.team.workitem.Category/_eV-j8CvsEeylht3RHbzFtg"/>
-				<rtc_cm:type rdf:resource="https://10.168.0.74/ccm/oslc/types/_clBjsSvsEeylht3RHbzFtg/defect"/>
+				<acc:accessContext rdf:resource="` + base_url + `/ccm/acclist#` + oslc_context + `"/>
+				<oslc_cmx:project rdf:resource="` + base_url + `/ccm/oslc/projectareas/` + oslc_context + `"/>
+				<rtc_cm:filedAgainst rdf:resource="` + base_url + `/ccm/resource/itemOid/com.ibm.team.workitem.Category/_eV-j8CvsEeylht3RHbzFtg"/>
+				<rtc_cm:type rdf:resource="` + base_url + `/ccm/oslc/types/` + oslc_context + `/defect"/>
 				<dcterms:description rdf:parseType="Literal">` + description + `</dcterms:description>
 				<rdf:type rdf:resource="http://open-services.net/ns/cm#ChangeRequest"/>
 				<dcterms:subject rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></dcterms:subject>
