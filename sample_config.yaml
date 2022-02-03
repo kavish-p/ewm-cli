@@ -1,6 +1,8 @@
 # sample config file named .ewm-cli.yaml to be placed at $HOME
 
-base_url: https://10.168.0.74
-ewm_username: Administrator
+base_url: https://10.168.0.61:9443
+ewm_username: kavish
 ewm_password: P@ssw0rd
-oslc_context: _clBjsSvsEeylht3RHbzFtg
+oslc_context: _isel8HoTEeyoCYEXLNJaZA
+filedAgainstCategory: _l-ZCoHoTEeyoCYEXLNJaZA
+defectType: com.ibm.team.workitem.workItemType.defect
