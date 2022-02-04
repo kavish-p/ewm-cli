@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 		log.Println("Found " + strconv.FormatInt(int64(errorsNum), 10) + " errors in Newman report located at " + reportPath)
 
 		for i := 0; i < errorsNum; i++ {
-			log.Println(errors[i])
+			// log.Println(errors[i])
 			testDesc := gjson.Get(errors[i].String(), "test")
 			errorMessage := gjson.Get(errors[i].String(), "message")
 
