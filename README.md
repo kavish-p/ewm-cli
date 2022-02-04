@@ -1,5 +1,6 @@
 # CLI program for IBM Enterprise Workflow Management (EWM)
-CLI program to interact with IBM EWM for tasks such as resolving work items and creating new defect workitems
+CLI program to interact with IBM EWM for tasks such as resolving work items and creating new defect workitems.
+IBM EWM was formerly named Rational Team Concert (RTC)
 
 Build Executable Binary
 ============
