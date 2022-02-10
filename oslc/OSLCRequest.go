@@ -61,6 +61,97 @@ func Auth() []*http.Cookie {
 	return res.Cookies()
 }
 
+func baseGETRequest(path string, method string) (string, error) {
+	cookie := Auth()
+	baseURL := viper.Get("base_url").(string)
+
+	url := baseURL + path
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest(method, url, nil)
+
+	for i := range cookie {
+		req.AddCookie(cookie[i])
+	}
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/xml")
+	req.Header.Add("Accept", "application/xml")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return string(body), nil
+}
+
+func basePayloadRequest(path string, method string, payload string) (string, error) {
+
+	cookie := Auth()
+
+	baseURL := viper.Get("base_url").(string)
+	url := baseURL + path
+
+	payload_reader := strings.NewReader(payload)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest(method, url, payload_reader)
+
+	for i := range cookie {
+		req.AddCookie(cookie[i])
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/xml")
+	req.Header.Add("Accept", "application/rdf+xml")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return string(body), nil
+}
+
+func QueryRDF(RDF string, query string) ([]*xmlquery.Node, error) {
+
+	doc, err := xmlquery.Parse(strings.NewReader(RDF))
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	queryResult := xmlquery.Find(doc, query)
+	return queryResult, nil
+}
+
 func GetContext() {
 	response, err := baseGETRequest("/ccm/oslc/workitems/catalog", "GET")
 	if err != nil {
@@ -170,52 +261,40 @@ func CreateDefect(summary string, description string) {
 	fmt.Println(res.Header.Get("X-com-ibm-team-repository-web-auth-msg"))
 }
 
-func baseGETRequest(path string, method string) (string, error) {
-	cookie := Auth()
-	baseURL := viper.Get("base_url").(string)
-
-	url := baseURL + path
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	client := &http.Client{Transport: tr}
-	req, err := http.NewRequest(method, url, nil)
-
-	for i := range cookie {
-		req.AddCookie(cookie[i])
-	}
+func GetWorkItemType(oslc_context string) {
+	response, err := baseGETRequest("/ccm/oslc/contexts/"+oslc_context+"/workitems/services.xml", "GET")
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		log.Fatal(err)
 	}
-	req.Header.Add("Content-Type", "application/xml")
-	req.Header.Add("Accept", "application/rdf+xml")
+	types, _ := QueryRDF(response, "//oslc_cm:factory[*]/oslc_cm:url")
 
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return "", err
+	for i := 0; i < len(types); i++ {
+		fmt.Println(types[i].InnerText())
 	}
-	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-	return string(body), nil
 }
 
-func QueryRDF(RDF string, query string) ([]*xmlquery.Node, error) {
-
-	doc, err := xmlquery.Parse(strings.NewReader(RDF))
+func GetWorkflowAction(oslc_context string, workflow string) {
+	response, err := baseGETRequest("/ccm/oslc/workflows/"+oslc_context+"/actions/"+workflow, "GET")
 	if err != nil {
-		fmt.Println(err)
-		return nil, err
+		log.Fatal(err)
 	}
 
-	queryResult := xmlquery.Find(doc, query)
-	return queryResult, nil
+	actionsID, _ := QueryRDF(response, "//rtc_cm:Action[*]/dc:title")
+	actionsName, _ := QueryRDF(response, "//rtc_cm:Action[*]/dc:identifier")
+
+	for i := 0; i < len(actionsID); i++ {
+		fmt.Println(actionsID[i].InnerText() + "\t" + actionsName[i].InnerText() + "\n")
+	}
+
+}
+
+func ResolveTask(workItemID string, workflowAction string) {
+	path := "/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/" + workItemID + "?_action=" + workflowAction
+	response, err := basePayloadRequest(path, "PUT", EmptyRDF)
+	if err != nil {
+		log.Fatal(err)
+	}
+	outcome, _ := QueryRDF(response, "//oslc_cm:status")
+	log.Println(outcome[0].InnerText())
 }
