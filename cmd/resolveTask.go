@@ -16,14 +16,15 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/kavish-p/ewm-cli/oslc"
 	"github.com/spf13/cobra"
+
+	"github.com/kavish-p/ewm-cli/oslc"
 )
 
-// workItemTypeCmd represents the type command
-var workItemTypeCmd = &cobra.Command{
-	Use:   "type",
-	Short: "A brief description of your command",
+// taskCmd represents the task command
+var taskCmd = &cobra.Command{
+	Use:   "task",
+	Short: "Resolve task work item",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -31,13 +32,20 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		context, _ := cmd.Flags().GetString("context")
-		oslc.GetWorkItemType(context)
+
+		taskID, _ := cmd.Flags().GetString("taskID")
+		action, _ := cmd.Flags().GetString("action")
+
+		oslc.ResolveTask(taskID, action)
 	},
 }
 
 func init() {
-	getCmd.AddCommand(workItemTypeCmd)
-	workItemTypeCmd.PersistentFlags().String("context", "", "context ID of project area")
-	workItemTypeCmd.MarkPersistentFlagRequired("context")
+	resolveCmd.AddCommand(taskCmd)
+
+	taskCmd.PersistentFlags().String("taskID", "", "ID of task work item")
+	taskCmd.PersistentFlags().String("action", "", "workflow action to perform on work item")
+
+	taskCmd.MarkPersistentFlagRequired("taskID")
+	taskCmd.MarkPersistentFlagRequired("action")
 }

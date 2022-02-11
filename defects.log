@@ -1,0 +1,3 @@
+124,Failed API Test: Account Info retrieved successfully,expected response to have status code 201 but got 200,https://10.168.0.61:9443/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/124
+125,Failed API Test: Status code is 201,expected response to have status code 201 but got 200,https://10.168.0.61:9443/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/125
+126,Failed Functional Test: test_ewm.py::test_answer2,assert 5 == 6,https://10.168.0.61:9443/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/126

@@ -16,14 +16,18 @@ limitations under the License.
 package cmd
 
 import (
+	"io/ioutil"
+	"log"
+	"strconv"
+
 	"github.com/kavish-p/ewm-cli/oslc"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/gjson"
 )
 
-// workflowCmd represents the workflow command
-var workflowCmd = &cobra.Command{
-	Use:   "workflow",
-	Short: "A brief description of your command",
+var newmanCmd = &cobra.Command{
+	Use:   "newman",
+	Short: "Check Postman/Newman JSON output file and create a defect workitem on IBM EWM for each failed test case",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -31,13 +35,31 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		context, _ := cmd.Flags().GetString("context")
-		oslc.GetWorkflows(context)
+
+		reportPath, _ := cmd.Flags().GetString("report")
+
+		report, err := ioutil.ReadFile(reportPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		errors := gjson.Get(string(report), "run.failures.#.error").Array()
+		errorsNum := len(errors)
+
+		log.Println("Found " + strconv.FormatInt(int64(errorsNum), 10) + " errors in Newman report located at " + reportPath)
+
+		for i := 0; i < errorsNum; i++ {
+			// log.Println(errors[i])
+			testDesc := gjson.Get(errors[i].String(), "test")
+			errorMessage := gjson.Get(errors[i].String(), "message")
+
+			oslc.CreateDefect("Failed API Test: "+testDesc.Str, errorMessage.Str)
+		}
 	},
 }
 
 func init() {
-	getCmd.AddCommand(workflowCmd)
-	workflowCmd.PersistentFlags().String("context", "", "context ID of project area")
-	workflowCmd.MarkPersistentFlagRequired("context")
+	checkCmd.AddCommand(newmanCmd)
+
+	newmanCmd.PersistentFlags().String("report", "", "json report of Newman execution")
+	newmanCmd.MarkPersistentFlagRequired("report")
 }

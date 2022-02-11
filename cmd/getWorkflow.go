@@ -20,10 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// defectCmd represents the defect command
-var categoryCmd = &cobra.Command{
-	Use:   "category",
-	Short: "A brief description of your command",
+// workflowCmd represents the workflow command
+var workflowCmd = &cobra.Command{
+	Use:   "workflow",
+	Short: "Get workflows in Project Area",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -31,16 +31,13 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		context, _ := cmd.Flags().GetString("context")
-		oslc.GetCategory(context)
+		oslc.GetWorkflows(context)
 	},
 }
 
 func init() {
-	getCmd.AddCommand(categoryCmd)
-
-	categoryCmd.PersistentFlags().String("context", "", "context ID of project area")
-
-	categoryCmd.MarkPersistentFlagRequired("context")
+	getCmd.AddCommand(workflowCmd)
+	workflowCmd.PersistentFlags().String("context", "", "context ID of project area")
+	workflowCmd.MarkPersistentFlagRequired("context")
 }

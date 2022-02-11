@@ -32,7 +32,7 @@ Usage Examples
 ewm-cli get context
 ```
 
-### Get FiledAgainst Category IDs for a specific projects
+### Get FiledAgainst Category IDs for a specific project
 ```
 ewm-cli get category --context _isel8HoTEeyoCYEXLNJaZA
 ```
@@ -71,4 +71,9 @@ ewm-cli get action --context _isel8HoTEeyoCYEXLNJaZA --workflow com.ibm.team.wor
 ### Resolve task work item
 ```
 ewm-cli resolve task --action com.ibm.team.workitem.taskWorkflow.action.complete --taskID 112
+```
+
+### Generate an HTML report of all defects created during checks
+```
+ewm-cli create defect-report
 ```

@@ -26,7 +26,7 @@ import (
 // defectCmd represents the defect command
 var defectCmd = &cobra.Command{
 	Use:   "defect",
-	Short: "A brief description of your command",
+	Short: "Create a defect on IBM EWM",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -38,7 +38,7 @@ to quickly create a Cobra application.`,
 		summary, _ := cmd.Flags().GetString("summary")
 		description, _ := cmd.Flags().GetString("description")
 
-		fmt.Println("defect called")
+		fmt.Println("create defect called")
 		oslc.CreateDefect(summary, description)
 	},
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/antchfx/xmlquery"
+	"github.com/kavish-p/ewm-cli/utils"
 	"github.com/spf13/viper"
 )
 
@@ -235,7 +236,7 @@ func CreateDefect(summary string, description string) {
 
 	for i := range cookie {
 		req.AddCookie(cookie[i])
-		fmt.Println(cookie[i])
+		// fmt.Println(cookie[i])
 	}
 
 	if err != nil {
@@ -257,8 +258,16 @@ func CreateDefect(summary string, description string) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(string(body))
-	fmt.Println(res.Header.Get("X-com-ibm-team-repository-web-auth-msg"))
+	// fmt.Println(string(body))
+	defectIDs, _ := QueryRDF(string(body), "//dcterms:identifier[1]")
+	defectID := defectIDs[0].InnerText()
+
+	defectLink := base_url + "/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/" + defectID
+
+	utils.AppendLine("defects.log", defectID+","+summary+","+description+","+defectLink+"\n")
+
+	log.Println("Defect with ID " + defectID + " Logged Successfully")
+	// fmt.Println(res.Header.Get("X-com-ibm-team-repository-web-auth-msg"))
 }
 
 func GetWorkItemType(oslc_context string) {

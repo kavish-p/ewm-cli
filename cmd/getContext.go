@@ -20,10 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// workItemTypeCmd represents the type command
-var workflowActionCmd = &cobra.Command{
-	Use:   "action",
-	Short: "A brief description of your command",
+// defectCmd represents the defect command
+var contextCmd = &cobra.Command{
+	Use:   "context",
+	Short: "Find the project/context IDs on EWM server",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -31,17 +31,10 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		context, _ := cmd.Flags().GetString("context")
-		workflow, _ := cmd.Flags().GetString("workflow")
-		oslc.GetWorkflowAction(context, workflow)
+		oslc.GetContext()
 	},
 }
 
 func init() {
-	getCmd.AddCommand(workflowActionCmd)
-	workflowActionCmd.PersistentFlags().String("context", "", "context ID of project area")
-	workflowActionCmd.MarkPersistentFlagRequired("context")
-
-	workflowActionCmd.PersistentFlags().String("workflow", "", "URI representation of workflow")
-	workflowActionCmd.MarkPersistentFlagRequired("workflow")
+	getCmd.AddCommand(contextCmd)
 }

@@ -20,15 +20,14 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/kavish-p/ewm-cli/oslc"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
-
-	"github.com/kavish-p/ewm-cli/oslc"
 )
 
-var newmanCmd = &cobra.Command{
-	Use:   "newman",
-	Short: "A brief description of your command",
+var pytestCmd = &cobra.Command{
+	Use:   "pytest",
+	Short: "Check Pytest JSON output file and create a defect workitem on IBM EWM for each failed test case",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -43,25 +42,24 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		errors := gjson.Get(string(report), "run.failures.#.error").Array()
-		errorsNum := len(errors)
+		failedTests := gjson.Get(string(report), "tests.#(outcome=failed)#").Array()
+		failedTestsNum := len(failedTests)
 
-		log.Println("Found " + strconv.FormatInt(int64(errorsNum), 10) + " errors in Newman report located at " + reportPath)
+		log.Println("Found " + strconv.FormatInt(int64(failedTestsNum), 10) + " failed tests in Pytest JSON report located at " + reportPath)
 
-		for i := 0; i < errorsNum; i++ {
-			// log.Println(errors[i])
-			testDesc := gjson.Get(errors[i].String(), "test")
-			errorMessage := gjson.Get(errors[i].String(), "message")
+		for i := 0; i < failedTestsNum; i++ {
+			// log.Println(failedTests[i])
+			testDesc := gjson.Get(failedTests[i].String(), "nodeid")
+			errorMessage := gjson.Get(failedTests[i].String(), "call.crash.message")
 
-			oslc.CreateDefect("Failed API Test: "+testDesc.Str, errorMessage.Str)
-			log.Println("Defect Logged Successfully")
+			oslc.CreateDefect("Failed Functional Test: "+testDesc.Str, errorMessage.Str)
 		}
 	},
 }
 
 func init() {
-	checkCmd.AddCommand(newmanCmd)
+	checkCmd.AddCommand(pytestCmd)
 
-	newmanCmd.PersistentFlags().String("report", "", "json report of Newman execution")
-	newmanCmd.MarkPersistentFlagRequired("report")
+	pytestCmd.PersistentFlags().String("report", "", "json report of Pytest execution")
+	pytestCmd.MarkPersistentFlagRequired("report")
 }
