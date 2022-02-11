@@ -82,7 +82,7 @@ func baseGETRequest(path string, method string) (string, error) {
 		return "", err
 	}
 	req.Header.Add("Content-Type", "application/xml")
-	req.Header.Add("Accept", "application/xml")
+	req.Header.Add("Accept", "application/rdf+xml")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -270,6 +270,21 @@ func GetWorkItemType(oslc_context string) {
 
 	for i := 0; i < len(types); i++ {
 		fmt.Println(types[i].InnerText())
+	}
+
+}
+
+func GetWorkflows(oslc_context string) {
+	response, err := baseGETRequest("/ccm/service/com.ibm.team.workitem.service.process.internal.rest.IWorkItemConfigRestService/workflows?projectAreaItemId="+oslc_context, "GET")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	workflows, _ := QueryRDF(response, "//workflowDefinitions[*]/id[1]")
+	workflowsName, _ := QueryRDF(response, "//workflowDefinitions[*]/workflows[1]/name[1]/text()[1]")
+
+	for i := 0; i < len(workflows); i++ {
+		fmt.Println(workflows[i].InnerText() + "\t" + workflowsName[i].InnerText() + "\n")
 	}
 
 }
