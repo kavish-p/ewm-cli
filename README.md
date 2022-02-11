@@ -58,6 +58,11 @@ ewm-cli check pytest --report C:\Users\Kavish\Documents\Temp\test\report.json
 ewm-cli get type --context _isel8HoTEeyoCYEXLNJaZA
 ```
 
+### Get workflows in Project Area
+```
+ewm-cli get workflow --context _isel8HoTEeyoCYEXLNJaZA
+```
+
 ### Get possible actions for a workflow in Project Area
 ```
 ewm-cli get action --context _isel8HoTEeyoCYEXLNJaZA --workflow com.ibm.team.workitem.taskWorkflow
