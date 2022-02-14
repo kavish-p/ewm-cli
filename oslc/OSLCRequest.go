@@ -303,14 +303,22 @@ func GetWorkflowAction(oslc_context string, workflow string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	actionsID, _ := QueryRDF(response, "//rtc_cm:Action[*]/dc:title")
-	actionsName, _ := QueryRDF(response, "//rtc_cm:Action[*]/dc:identifier")
+	actionsID, _ := QueryRDF(response, "//rdfs:member/@rdf:resource")
 
 	for i := 0; i < len(actionsID); i++ {
-		fmt.Println(actionsID[i].InnerText() + "\t" + actionsName[i].InnerText() + "\n")
+		fmt.Println(actionsID[i].InnerText() + "\n")
 	}
 
+}
+
+func PerformAction(workItemID string, workflowAction string) {
+	path := "/ccm/resource/itemName/com.ibm.team.workitem.WorkItem/" + workItemID + "?_action=" + workflowAction
+	response, err := basePayloadRequest(path, "PUT", EmptyRDF)
+	if err != nil {
+		log.Fatal(err)
+	}
+	outcome, _ := QueryRDF(response, "//oslc_cm:status")
+	log.Println(outcome[0].InnerText())
 }
 
 func ResolveTask(workItemID string, workflowAction string) {
