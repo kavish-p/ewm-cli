@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/kavish-p/ewm-cli/oslc"
 	"github.com/spf13/cobra"
@@ -28,15 +29,12 @@ import (
 var pytestCmd = &cobra.Command{
 	Use:   "pytest",
 	Short: "Check Pytest JSON output file and create a defect workitem on IBM EWM for each failed test case",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		reportPath, _ := cmd.Flags().GetString("report")
+
+		addDesc := cmd.Flags().Lookup("addDesc").Changed
 
 		report, err := ioutil.ReadFile(reportPath)
 		if err != nil {
@@ -52,7 +50,14 @@ to quickly create a Cobra application.`,
 			testDesc := gjson.Get(failedTests[i].String(), "nodeid")
 			errorMessage := gjson.Get(failedTests[i].String(), "call.crash.message")
 
-			oslc.CreateDefect("Failed Functional Test: "+testDesc.Str, errorMessage.Str)
+			cleanErrorMsg := strings.Replace(errorMessage.Str, "\n", " ", -1)
+
+			if addDesc {
+				addDescString, _ := cmd.Flags().GetString("addDesc")
+				cleanErrorMsg = cleanErrorMsg + "\n\n" + addDescString
+			}
+
+			oslc.CreateDefect("Failed Functional Test: "+testDesc.Str, cleanErrorMsg)
 		}
 	},
 }
@@ -62,4 +67,6 @@ func init() {
 
 	pytestCmd.PersistentFlags().String("report", "", "json report of Pytest execution")
 	pytestCmd.MarkPersistentFlagRequired("report")
+
+	pytestCmd.PersistentFlags().String("addDesc", "", "additional description to add to defect")
 }
